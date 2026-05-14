@@ -1,0 +1,195 @@
+# Databases-12-01
+Домашнее задание к занятию «Базы данных» Чернов Николай
+
+Чек-лист готовности к практическому заданию
+Изучены лонгриды:
+
+Введение в реляционные базы данных
+Работа с SQL
+
+Проектирование и развёртывание баз данных
+
+Выполнить это задание вам поможет пример из раздела «Проектирование схемы БД» в лонгриде «Проектирование и развёртывание баз данных».
+
+Легенда
+Заказчик передал вам файл в формате Excel, в котором сформирован отчёт.
+
+На основе этого отчёта нужно выполнить следующие задания.
+
+Задание 1
+Опишите не менее семи таблиц, из которых состоит база данных. Определите:
+
+какие данные хранятся в этих таблицах,
+какой тип данных у столбцов в этих таблицах, если данные хранятся в PostgreSQL.
+Начертите схему полученной модели данных. Можете использовать онлайн-редактор: https://app.diagrams.net/
+
+Этапы реализации:
+
+Внимательно изучите предоставленный вам файл с данными и подумайте, как можно сгруппировать данные по смыслу.
+Разбейте исходный файл на несколько таблиц и определите список столбцов в каждой из них.
+Для каждого столбца подберите подходящий тип данных из PostgreSQL.
+Для каждой таблицы определите первичный ключ (PRIMARY KEY).
+Определите типы связей между таблицами.
+Начертите схему модели данных. На схеме должны быть чётко отображены:
+все таблицы с их названиями,
+все столбцы с указанием типов данных,
+первичные ключи (они должны быть явно выделены),
+линии, показывающие связи между таблицами.
+Результатом выполнения задания должен стать скриншот получившейся схемы базы данных.
+
+Модель базы данных для учёта сотрудников
+Таблицы и их структура
+1. employees (Сотрудники)
+
+Хранит основную информацию о сотрудниках.
+
+employee_id (SERIAL, PRIMARY KEY) — уникальный идентификатор сотрудника;
+
+full_name (VARCHAR(100), NOT NULL) — ФИО сотрудника;
+
+salary (DECIMAL(10,2), NOT NULL) — оклад;
+
+position_id (INTEGER, FOREIGN KEY REFERENCES positions(position_id)) — ссылка на должность;
+
+department_id (INTEGER, FOREIGN KEY REFERENCES departments(department_id)) — ссылка на подразделение;
+
+hire_date (DATE, NOT NULL) — дата найма;
+
+branch_address_id (INTEGER, FOREIGN KEY REFERENCES branch_addresses(address_id)) — ссылка на адрес филиала.
+
+2. positions (Должности)
+
+Содержит список должностей.
+
+position_id (SERIAL, PRIMARY KEY) — идентификатор должности;
+
+position_name (VARCHAR(100), NOT NULL, UNIQUE) — название должности.
+
+3. departments (Подразделения)
+
+Описывает организационные подразделения.
+
+department_id (SERIAL, PRIMARY KEY) — идентификатор подразделения;
+
+department_name (VARCHAR(100), NOT NULL, UNIQUE) — название подразделения;
+
+department_type (VARCHAR(50), NOT NULL) — тип подразделения (Отдел, Группа, Департамент).
+
+4. branch_addresses (Адреса филиалов)
+
+Хранит адреса филиалов компании.
+
+address_id (SERIAL, PRIMARY KEY) — идентификатор адреса;
+
+address (TEXT, NOT NULL, UNIQUE) — полный адрес филиала.
+
+5. projects (Проекты)
+
+Список проектов, к которым могут быть назначены сотрудники.
+
+project_id (SERIAL, PRIMARY KEY) — идентификатор проекта;
+
+project_name (VARCHAR(200), NOT NULL, UNIQUE) — название проекта.
+
+6. employee_projects (Назначение сотрудников на проекты)
+
+Связующая таблица для связи «многие ко многим» между сотрудниками и проектами.
+
+assignment_id (SERIAL, PRIMARY KEY) — идентификатор назначения;
+
+employee_id (INTEGER, FOREIGN KEY REFERENCES employees(employee_id), NOT NULL) — ссылка на сотрудника;
+
+project_id (INTEGER, FOREIGN KEY REFERENCES projects(project_id), NOT NULL) — ссылка на проект;
+
+assigned_date (TIMESTAMP DEFAULT CURRENT_TIMESTAMP) — дата назначения (опционально, можно добавить).
+
+7. department_types (Типы подразделений)
+
+Справочная таблица для типов подразделений (чтобы избежать дублирования и ошибок ввода).
+
+type_id (SERIAL, PRIMARY KEY) — идентификатор типа;
+
+type_name (VARCHAR(50), NOT NULL, UNIQUE) — название типа (Отдел, Группа, Департамент).
+
+Схема связей между таблицами
+Типы связей:
+
+employees → positions: многие к одному (Many-to-One).
+
+Один сотрудник занимает одну должность, но одна должность может быть у многих сотрудников.
+
+Реализуется через внешний ключ position_id в таблице employees.
+
+employees → departments: многие к одному (Many-to-One).
+
+Один сотрудник принадлежит к одному подразделению, но одно подразделение включает многих сотрудников.
+
+Реализуется через внешний ключ department_id в таблице employees.
+
+departments → department_types: многие к одному (Many-to-One).
+
+Многие подразделения могут быть одного типа (например, несколько отделов).
+
+Реализуется через внешний ключ (можно добавить type_id в таблицу departments, заменив столбец department_type).
+
+employees → branch_addresses: многие к одному (Many-to-One).
+
+Несколько сотрудников могут работать в одном филиале.
+
+Реализуется через внешний ключ branch_address_id в таблице employees.
+
+employees ↔ projects: многие ко многим (Many-to-Many).
+
+Один сотрудник может быть назначен на несколько проектов, и один проект может включать нескольких сотрудников.
+
+Реализуется через связующую таблицу employee_projects.
+
+<img width="1366" height="547" alt="image" src="https://github.com/user-attachments/assets/d48786d7-363f-46a6-a698-ab5354575d2a" />
+
+
+
+
+
+```sql
+CREATE TABLE department_types (
+    type_id SERIAL PRIMARY KEY,
+    type_name VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE departments (
+    department_id SERIAL PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL UNIQUE,
+    type_id INTEGER NOT NULL REFERENCES department_types(type_id)
+);
+
+CREATE TABLE positions (
+    position_id SERIAL PRIMARY KEY,
+    position_name VARCHAR(100) NOT NULL UNIQUE
+);
+
+CREATE TABLE branch_addresses (
+    address_id SERIAL PRIMARY KEY,
+    address TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE employees (
+    employee_id SERIAL PRIMARY KEY,
+    full_name VARCHAR(100) NOT NULL,
+    salary DECIMAL(10,2) NOT NULL,
+    position_id INTEGER NOT NULL REFERENCES positions(position_id),
+    department_id INTEGER NOT NULL REFERENCES departments(department_id),
+    hire_date DATE NOT NULL,
+    branch_address_id INTEGER NOT NULL REFERENCES branch_addresses(address_id)
+);
+
+CREATE TABLE projects (
+    project_id SERIAL PRIMARY KEY,
+    project_name VARCHAR(200) NOT NULL UNIQUE
+);
+
+CREATE TABLE employee_projects (
+    assignment_id SERIAL PRIMARY KEY,
+    employee_id INTEGER NOT NULL REFERENCES employees(employee_id),
+    project_id INTEGER NOT NULL REFERENCES projects(project_id),
+    assigned_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
